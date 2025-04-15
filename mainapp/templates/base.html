@@ -1,0 +1,248 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniShowTime</title>
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a, #2c2c2c);
+            color: #f5f5f5;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background: linear-gradient(135deg, #facc15 0%, #eab308 100%);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            position: fixed;
+            width: 100%;
+            z-index: 50;
+            top: 0;
+        }
+
+        .navbar-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #111827;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.3s ease;
+        }
+
+        .navbar-title:hover {
+            color: #fff;
+        }
+
+        .navbar-item {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #111827;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-item:hover {
+            background-color: #111827;
+            color: #facc15;
+            transform: translateY(-2px);
+        }
+
+        .navbar-button {
+            background-color: #111827;
+            color: #facc15;
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-button:hover {
+            background-color: #facc15;
+            color: #111827;
+            border-color: #111827;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu {
+            background: #111827;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            transform: translateY(-10px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu.open {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+            color: #d1d5db;
+            padding: 2rem 0;
+            margin-top: auto;
+        }
+
+        .footer a {
+            color: #facc15;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: #fff;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding-top: 5rem;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <!-- Title -->
+                <a href="{% url 'dashboard' %}" class="navbar-title">UniShowTime</a>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-4">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'dashboard' %}" class="navbar-item">Dashboard</a>
+                        {% if user.role == 'admin' or user.role == 'superadmin' %}
+                            <a href="{% url 'event_create' %}" class="navbar-item">Create Event</a>
+                        {% endif %}
+                        <a href="{% url 'logout' %}" class="navbar-button">Logout</a>
+                        <div class="flex items-center space-x-2">
+                            {% if user.profile_image %}
+                                <img src="{{ user.profile_image.url }}" class="w-8 h-8 rounded-full object-cover border-2 border-gray-900 hover:border-yellow-400 transition" alt="Profile">
+                            {% endif %}
+                            <span class="text-sm font-medium text-gray-900">{{ user.username }}</span>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="navbar-button">Login</a>
+                        <a href="{% url 'register' %}" class="navbar-button">Register</a>
+                    {% endif %}
+                </div>
+
+                <!-- Mobile Menu Toggle -->
+                <button id="mobile-menu-button" class="md:hidden focus:outline-none p-2 rounded-md hover:bg-gray-900">
+                    <svg class="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path id="menu-icon" stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="mobile-menu md:hidden">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="block py-2 px-4 text-yellow-400 hover:bg-gray-700 rounded">Dashboard</a>
+                    {% if user.role == 'admin' or user.role == 'superadmin' %}
+                        <a href="{% url 'event_create' %}" class="block py-2 px-4 text-yellow-400 hover:bg-gray-700 rounded">Create Event</a>
+                    {% endif %}
+                    <a href="{% url 'logout' %}" class="block py-2 px-4 text-yellow-400 hover:bg-gray-700 rounded">Logout</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="block py-2 px-4 text-yellow-400 hover:bg-gray-700 rounded">Login</a>
+                    <a href="{% url 'register' %}" class="block py-2 px-4 text-yellow-400 hover:bg-gray-700 rounded">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 animate-fadeIn">
+        {% block content %}
+        <!-- Page-specific content goes here -->
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 py-8">
+                <div>
+                    <h3 class="text-lg font-semibold text-white mb-4">UniShowTime</h3>
+                    <p class="text-sm text-gray-400">Your ultimate platform for university events and entertainment.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-white mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'dashboard' %}" class="text-sm hover:underline">Dashboard</a></li>
+                        {% if user.is_authenticated and user.role == 'admin' or user.role == 'superadmin' %}
+                            <li><a href="{% url 'event_create' %}" class="text-sm hover:underline">Create Event</a></li>
+                        {% endif %}
+                        <li><a href="{% url 'login' %}" class="text-sm hover:underline">Login</a></li>
+                        <li><a href="{% url 'register' %}" class="text-sm hover:underline">Register</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-white mb-4">Contact</h3>
+                    <p class="text-sm text-gray-400">Email: <a href="mailto:support@unishowtime.com">support@unishowtime.com</a></p>
+                    <p class="text-sm text-gray-400">Phone: +1 (555) 123-4567</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 pt-4 text-center">
+                <p class="text-sm text-gray-400">&copy; 2025 UniShowTime. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript for Mobile Menu Toggle -->
+    <script>
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = document.querySelector('#menu-icon');
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('open');
+            // Toggle between hamburger and close icon
+            if (mobileMenu.classList.contains('open')) {
+                menuIcon.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+            } else {
+                menuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+            }
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!mobileMenu.contains(e.target) && !mobileMenuButton.contains(e.target) && mobileMenu.classList.contains('open')) {
+                mobileMenu.classList.remove('open');
+                menuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+            }
+        });
+    </script>
+</body>
+</html>

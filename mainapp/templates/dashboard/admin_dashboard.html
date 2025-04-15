@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-7xl p-8 bg-gray-800 rounded-2xl shadow-2xl transform transition-all hover:scale-105 animate-fadeIn">
+        <h2 class="text-3xl font-bold mb-8 text-center text-yellow-400 tracking-tight">Admin Dashboard</h2>
+
+        <!-- Stats Section -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="bg-yellow-400 text-black p-6 rounded-lg shadow-lg">
+                <h3 class="text-xl font-semibold">Total Events</h3>
+                <p class="text-4xl font-bold">{{ total_events }}</p>
+            </div>
+            <div class="bg-yellow-400 text-black p-6 rounded-lg shadow-lg">
+                <h3 class="text-xl font-semibold">Total Bookings</h3>
+                <p class="text-4xl font-bold">{{ total_bookings }}</p>
+            </div>
+            <div class="bg-yellow-400 text-black p-6 rounded-lg shadow-lg">
+                <h3 class="text-xl font-semibold">Upcoming Events</h3>
+                <p class="text-4xl font-bold">{{ upcoming_events }}</p>
+            </div>
+        </div>
+
+        <!-- Manage Events Section -->
+        <div class="mt-10">
+            <h3 class="text-2xl font-bold text-yellow-400 mb-4">Manage Events</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for event in events %}
+                    <div class="bg-gray-800 text-white p-6 rounded-lg shadow-lg">
+                        <h4 class="text-xl font-semibold">{{ event.title }}</h4>
+                        <p class="text-gray-400 mt-2">{{ event.description|truncatewords:20 }}</p>
+                        <div class="mt-4">
+                            <a href="{% url 'admin_event_details' event.id %}" class="text-yellow-400 hover:text-yellow-300">View Details</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="mt-4">
+                <a href="{% url 'create_event' %}" class="inline-block bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300 transition">Create New Event</a>
+            </div>
+        </div>
+
+        <!-- Manage Users Section -->
+        <div class="mt-10">
+            <h3 class="text-2xl font-bold text-yellow-400 mb-4">Manage Users</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for user in users %}
+                    <div class="bg-gray-800 text-white p-6 rounded-lg shadow-lg">
+                        <h4 class="text-xl font-semibold">{{ user.username }}</h4>
+                        <p class="text-gray-400 mt-2">{{ user.role }}</p>
+                        <div class="mt-4">
+                            <a href="{% url 'admin_user_details' user.id %}" class="text-yellow-400 hover:text-yellow-300">View Details</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="mt-10 text-center">
+            <a href="#" class="text-sm text-yellow-400 hover:underline">Need Help?</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-2xl p-8 bg-gray-800 rounded-2xl shadow-2xl transform transition-all hover:scale-105 animate-fadeIn">
+        <h2 class="text-3xl font-bold text-center text-yellow-400 mb-6 tracking-tight">User Details</h2>
+
+        <!-- User Profile Section -->
+        <div class="flex items-center mb-6 space-x-6">
+            <div class="w-24 h-24 bg-gray-700 rounded-full overflow-hidden">
+                <img src="{{ user.profile_image.url }}" alt="Profile Picture" class="w-full h-full object-cover">
+            </div>
+            <div>
+                <h3 class="text-xl font-semibold text-yellow-400">{{ user.username }}</h3>
+                <p class="text-gray-400">{{ user.role|capfirst }}</p>
+            </div>
+        </div>
+
+        <!-- User Info -->
+        <div class="space-y-6 mb-6">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-gray-200">Email:</p>
+                <p class="text-gray-400">{{ user.email }}</p>
+            </div>
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-gray-200">Enrollment No:</p>
+                <p class="text-gray-400">{{ user.enrollment_no }}</p>
+            </div>
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-gray-200">Department:</p>
+                <p class="text-gray-400">{{ user.department }}</p>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="space-x-4 flex items-center justify-between">
+            <a href="{% url 'edit_user' user.id %}" class="inline-block bg-yellow-400 text-black px-6 py-2 rounded-lg hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all duration-300 transform hover:scale-105">Edit User</a>
+            <a href="{% url 'admin_dashboard' %}" class="inline-block bg-gray-700 text-white px-6 py-2 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all duration-300 transform hover:scale-105">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

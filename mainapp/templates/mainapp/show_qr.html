@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="p-6 text-center">
+    <h2 class="text-2xl font-bold mb-4">Your Ticket QR Code</h2>
+    <img src="{{ ticket.qr_code.url }}" alt="QR Code" class="mx-auto shadow-lg rounded-lg w-64 h-64" />
+    <a href="{% url 'qr_download' ticket.id %}" class="mt-4 inline-block bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-300 transition">
+        Download QR Code
+    </a>
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto p-8 bg-gray-800 rounded-2xl shadow-xl">
+    <h2 class="text-3xl font-bold text-center text-yellow-400 mb-8">Create Event</h2>
+
+    <!-- Success and Error Messages -->
+    {% if messages %}
+        <div class="mb-6 space-y-2">
+            {% for message in messages %}
+                <div class="p-3 bg-red-500/20 text-red-300 rounded-lg text-sm text-center animate-fadeIn">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Display form errors -->
+    {% if form.errors %}
+        <div class="mb-4 bg-red-500/20 text-red-300 rounded-lg p-4">
+            <ul>
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ field.name }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Event Name -->
+        <div class="mb-4">
+            <label for="event_name" class="block text-sm font-medium text-gray-200">Event Name</label>
+            <input type="text" id="event_name" name="event_name" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" placeholder="Enter event name" required>
+        </div>
+
+        <!-- Event Description -->
+        <div class="mb-4">
+            <label for="description" class="block text-sm font-medium text-gray-200">Event Description</label>
+            <textarea id="description" name="description" rows="4" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" placeholder="Describe the event" required></textarea>
+        </div>
+
+        <!-- Event Date -->
+        <div class="mb-4">
+            <label for="event_date" class="block text-sm font-medium text-gray-200">Event Date</label>
+            <input type="date" id="event_date" name="event_date" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" required>
+        </div>
+
+        <!-- Event Time -->
+        <div class="mb-4">
+            <label for="event_time" class="block text-sm font-medium text-gray-200">Event Time</label>
+            <input type="time" id="event_time" name="event_time" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" required>
+        </div>
+
+        <!-- Event Location -->
+        <div class="mb-4">
+            <label for="location" class="block text-sm font-medium text-gray-200">Event Location</label>
+            <input type="text" id="location" name="location" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" placeholder="Enter event location" required>
+        </div>
+
+        <!-- Event Image -->
+        <div class="mb-4">
+            <label for="image" class="block text-sm font-medium text-gray-200">Event Image</label>
+            <input type="file" id="image" name="image" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg">
+        </div>
+
+        <!-- Ticket Price -->
+        <div class="mb-4">
+            <label for="ticket_price" class="block text-sm font-medium text-gray-200">Ticket Price</label>
+            <input type="number" step="0.01" id="ticket_price" name="ticket_price" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" placeholder="Enter ticket price" required>
+        </div>
+
+        <button type="submit" class="w-full bg-yellow-400 text-gray-900 font-semibold py-3 rounded-lg hover:bg-yellow-500">Create Event</button>
+    </form>
+</div>
+
+{% endblock %}
