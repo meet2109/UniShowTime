@@ -52,14 +52,18 @@
         <div class="mt-10" data-aos="fade-up" data-aos-delay="100">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-2xl font-bold text-purple-400"><i class="fas fa-building mr-2"></i>Manage Departments</h3>
-                <div class="flex gap-4">
+                <div class="flex gap-4 items-center">
                     <input type="text" id="departmentSearch" placeholder="Search departments..." class="bg-gray-700 text-white px-4 py-2 rounded-lg border border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400">
-                    <button onclick="toggleAllDepartments()" class="bg-purple-400 text-white px-4 py-2 rounded-lg hover:bg-purple-500">Show All</button>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="departmentToggle" class="sr-only peer" onchange="toggleDepartments()">
+                        <div class="w-14 h-7 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-purple-400"></div>
+                        <span class="ml-3 text-sm font-medium text-white">Show All</span>
+                    </label>
                 </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {% for department in departments %}
-                    <div class="bg-gray-700 text-white p-6 rounded-lg shadow-lg department-card" data-has-active-events="{{ department.has_active_events }}" style="display: {% if department.has_active_events %}block{% else %}none{% endif %}">
+                    <div class="bg-gray-700 text-white p-6 rounded-lg shadow-lg department-card" data-has-active-events="{{ department.has_active_events }}" style="display: block">
                         <div class="flex justify-between items-start mb-4">
                             <h4 class="text-xl font-semibold">{{ department.name }}</h4>
                             <span class="px-2 py-1 bg-purple-400 text-xs text-white rounded-full">{{ department.code }}</span>
@@ -86,19 +90,35 @@
         <div class="mt-10" data-aos="fade-up" data-aos-delay="200">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-2xl font-bold text-purple-400"><i class="fas fa-users-cog mr-2"></i>Manage Users</h3>
-                <div class="flex gap-4">
+                <div class="flex gap-4 items-center">
                     <input type="text" id="userSearch" placeholder="Search users..." class="bg-gray-700 text-white px-4 py-2 rounded-lg border border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400">
-                    <div class="flex gap-2">
-                        <button onclick="filterUsers('all')" class="bg-purple-400 text-white px-4 py-2 rounded-lg hover:bg-purple-500">All</button>
-                        <button onclick="filterUsers('student')" class="bg-purple-400 text-white px-4 py-2 rounded-lg hover:bg-purple-500">Students</button>
-                        <button onclick="filterUsers('admin')" class="bg-purple-400 text-white px-4 py-2 rounded-lg hover:bg-purple-500">Teachers</button>
-                        <button onclick="filterUsers('superadmin')" class="bg-purple-400 text-white px-4 py-2 rounded-lg hover:bg-purple-500">Admins</button>
+                    <div class="flex items-center gap-4">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="radio" name="userRole" value="all" class="sr-only peer" onchange="filterUsers('all')" checked>
+                            <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-400"></div>
+                            <span class="ml-2 text-sm font-medium text-white">All</span>
+                        </label>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="radio" name="userRole" value="student" class="sr-only peer" onchange="filterUsers('student')">
+                            <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-400"></div>
+                            <span class="ml-2 text-sm font-medium text-white">Students</span>
+                        </label>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="radio" name="userRole" value="admin" class="sr-only peer" onchange="filterUsers('admin')">
+                            <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-400"></div>
+                            <span class="ml-2 text-sm font-medium text-white">Teachers</span>
+                        </label>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="radio" name="userRole" value="superadmin" class="sr-only peer" onchange="filterUsers('superadmin')">
+                            <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-400"></div>
+                            <span class="ml-2 text-sm font-medium text-white">Admins</span>
+                        </label>
                     </div>
                 </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {% for user in users %}
-                    <div class="bg-gray-700 text-white p-6 rounded-lg shadow-lg user-card" data-role="{{ user.role }}" style="display: none;">
+                    <div class="bg-gray-700 text-white p-6 rounded-lg shadow-lg user-card" data-role="{{ user.role }}" style="display: block;">
                         <div class="flex items-center space-x-4 mb-4">
                             <div class="w-12 h-12 bg-purple-400 rounded-full flex items-center justify-center text-white font-bold">
                                 {{ user.username|first|upper }}
@@ -148,23 +168,28 @@
     const departmentSearch = document.getElementById('departmentSearch');
     const departmentGrid = document.getElementById('departmentGrid');
     const departments = departmentGrid.getElementsByClassName('department-card');
-    let allDepartmentsVisible = false;
+    let showAllDepartments = false;
 
     departmentSearch.addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase();
+        filterDepartments(searchTerm);
+    });
+
+    function filterDepartments(searchTerm = '') {
         Array.from(departments).forEach(dept => {
             const title = dept.querySelector('h4').textContent.toLowerCase();
             const hasActiveEvents = dept.dataset.hasActiveEvents === 'true';
-            dept.style.display = (title.includes(searchTerm) && (hasActiveEvents || allDepartmentsVisible)) ? 'block' : 'none';
+            const matchesSearch = title.includes(searchTerm);
+            dept.style.display = matchesSearch && (showAllDepartments || hasActiveEvents) ? 'block' : 'none';
+            // Add smooth transition
+            dept.style.transition = 'all 0.3s ease-in-out';
+            dept.style.opacity = dept.style.display === 'block' ? '1' : '0';
         });
-    });
+    }
 
-    function toggleAllDepartments() {
-        allDepartmentsVisible = !allDepartmentsVisible;
-        Array.from(departments).forEach(dept => {
-            const hasActiveEvents = dept.dataset.hasActiveEvents === 'true';
-            dept.style.display = (hasActiveEvents || allDepartmentsVisible) ? 'block' : 'none';
-        });
+    function toggleDepartments() {
+        showAllDepartments = document.getElementById('departmentToggle').checked;
+        filterDepartments(departmentSearch.value.toLowerCase());
     }
 
     // User search and filter functionality
@@ -190,17 +215,19 @@
             const matchesSearch = username.includes(searchTerm);
             const matchesRole = role === 'all' || userRole === role;
             user.style.display = (matchesSearch && matchesRole) ? 'block' : 'none';
+            // Add smooth transition
+            user.style.transition = 'all 0.3s ease-in-out';
+            user.style.opacity = user.style.display === 'block' ? '1' : '0';
         });
     }
 
-    // Initialize with only active event departments visible
+    // Initialize with active event departments and all users visible
     window.addEventListener('load', function() {
-        Array.from(departments).forEach(dept => {
-            const hasActiveEvents = dept.dataset.hasActiveEvents === 'true';
-            dept.style.display = hasActiveEvents ? 'block' : 'none';
-        });
-        // Show all users initially
+        document.getElementById('departmentToggle').checked = false;
+        showAllDepartments = false;
+        filterDepartments();
         filterUsers('all');
     });
+</script>
 </script>
 {% endblock %}
