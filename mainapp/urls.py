@@ -7,6 +7,7 @@ def home_redirect(request):
 
 urlpatterns = [
     path('', home_redirect),
+    path('superadmin/', views.superadmin_dashboard, name='superadmin_dashboard'),
     path('user/<int:user_id>/', views.admin_user_details, name='admin_user_details'),
     path('create-event/', views.create_event, name='create_event'),
     path('suggest-event/', views.suggest_event, name='suggest_event'),

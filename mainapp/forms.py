@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import CustomUser, Event
+from django.utils import timezone
+from .models import CustomUser, Event, ROLE_CHOICES
+import datetime
 
 class CustomUserRegisterForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -56,8 +58,11 @@ class EventForm(forms.ModelForm):
     def clean_date(self):
         date = self.cleaned_data.get('date')
         from django.utils import timezone
-        if date and date < timezone.now().date():
-            raise forms.ValidationError("Event date cannot be in the past.")
+        if date:
+            if isinstance(date, datetime.datetime):
+                date = date.date()
+            if date < timezone.now().date():
+                raise forms.ValidationError("Event date cannot be in the past.")
         return date
         
     def clean_available_tickets(self):
@@ -71,12 +76,26 @@ class EventForm(forms.ModelForm):
         date = cleaned_data.get('date')
         time = cleaned_data.get('time')
         
-        if date and time:
-            # Combine date and time into a datetime object
-            import datetime
-            combined_datetime = datetime.datetime.combine(date, time)
-            cleaned_data['date'] = combined_datetime
-            
+        if not date:
+            raise forms.ValidationError("Date is required.")
+        
+        if not time:
+            raise forms.ValidationError("Time is required.")
+        
+        if isinstance(date, datetime.datetime):
+            date = date.date()
+        
+        # Combine date and time into a datetime object
+        combined_datetime = datetime.datetime.combine(date, time)
+        cleaned_data['date'] = combined_datetime
+        
+        # Make combined_datetime timezone-aware and validate it's not in the past
+        combined_datetime = timezone.make_aware(combined_datetime)
+        cleaned_data['date'] = combined_datetime
+        
+        if combined_datetime < timezone.now():
+            raise forms.ValidationError("Event date and time must be in the future.")
+        
         return cleaned_data
 
 
@@ -100,8 +119,11 @@ class SuggestEventForm(forms.ModelForm):
     def clean_date(self):
         date = self.cleaned_data.get('date')
         from django.utils import timezone
-        if date and date < timezone.now().date():
-            raise forms.ValidationError("Event date cannot be in the past.")
+        if date:
+            if isinstance(date, datetime.datetime):
+                date = date.date()
+            if date < timezone.now().date():
+                raise forms.ValidationError("Event date cannot be in the past.")
         return date
         
     def clean(self):
@@ -109,10 +131,24 @@ class SuggestEventForm(forms.ModelForm):
         date = cleaned_data.get('date')
         time = cleaned_data.get('time')
         
-        if date and time:
-            # Combine date and time into a datetime object
-            import datetime
-            combined_datetime = datetime.datetime.combine(date, time)
-            cleaned_data['date'] = combined_datetime
-            
+        if not date:
+            raise forms.ValidationError("Date is required.")
+        
+        if not time:
+            raise forms.ValidationError("Time is required.")
+        
+        if isinstance(date, datetime.datetime):
+            date = date.date()
+        
+        # Combine date and time into a datetime object
+        combined_datetime = datetime.datetime.combine(date, time)
+        cleaned_data['date'] = combined_datetime
+        
+        # Make combined_datetime timezone-aware and validate it's not in the past
+        combined_datetime = timezone.make_aware(combined_datetime)
+        cleaned_data['date'] = combined_datetime
+        
+        if combined_datetime < timezone.now():
+            raise forms.ValidationError("Event date and time must be in the future.")
+        
         return cleaned_data

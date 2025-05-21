@@ -221,36 +221,5 @@
         }
     });
 </script>
-<div class="form-group">
-    <label for="id_role" class="block text-sm font-medium text-gray-200">Register as:</label>
-    <select name="role" id="id_role" class="form-control block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-300" required>
-        <option value="student">Student</option>
-        <option value="admin">Teacher</option>
-    </select>
-</div>
-<div id="student-fields">
-    <label for="enrollment_no" class="block text-sm font-medium text-gray-200">Enrollment No.</label>
-    <div class="relative mt-1">
-        <input type="text" name="enrollment_no" id="enrollment_no" required class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-300" placeholder="Enter your enrollment no." />
-    </div>
-</div>
-<div id="teacher-fields" style="display:none;">
-    <label for="department" class="block text-sm font-medium text-gray-200">Department</label>
-    <div class="relative mt-1">
-        <input type="text" name="department" id="department" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-300" placeholder="Enter department (for teachers)" />
-    </div>
-</div>
-<script>
-document.getElementById('id_role').addEventListener('change', function() {
-  var studentFields = document.getElementById('student-fields');
-  var teacherFields = document.getElementById('teacher-fields');
-  if (this.value === 'student') {
-    studentFields.style.display = '';
-    teacherFields.style.display = 'none';
-  } else {
-    studentFields.style.display = 'none';
-    teacherFields.style.display = '';
-  }
-});
-</script>
+
 {% endblock %}

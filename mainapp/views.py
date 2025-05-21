@@ -55,7 +55,7 @@ def dashboard_view(request):
     elif user.role == 'admin':
         return redirect('admin_dashboard')
     elif user.role == 'superadmin':
-        return render(request, 'dashboard/superadmin_dashboard.html')
+        return redirect('superadmin_dashboard')
 
 @login_required
 def student_dashboard(request):
@@ -95,6 +95,26 @@ def qr_download(request, ticket_id):
 from django.shortcuts import render
 from .models import Event, CustomUser
 from django.utils import timezone
+
+@login_required
+def superadmin_dashboard(request):
+    if request.user.role != 'superadmin':
+        return redirect('dashboard')
+    
+    departments = Department.objects.all()
+    users = CustomUser.objects.all()
+    events = Event.objects.all()
+    
+    context = {
+        'departments': departments,
+        'users': users,
+        'events': events,
+        'total_departments': departments.count(),
+        'total_users': users.count(),
+        'total_events': events.count(),
+    }
+    
+    return render(request, 'dashboard/superadmin_dashboard.html', context)
 
 def admin_dashboard(request):
     if request.user.role not in ['admin', 'superadmin']:
@@ -280,13 +300,13 @@ def create_event(request):
             form.initial['department'] = request.user.department
 
     # Get all departments for the dropdown
-    from .models import Department, EVENT_CATEGORIES
+    from .models import Department
     departments = Department.objects.all()
     
     return render(request, 'mainapp/create_event.html', {
         'form': form,
         'departments': departments,
-        'categories': EVENT_CATEGORIES
+        'categories': Event.CATEGORY_CHOICES
     })
 
 @login_required
@@ -308,13 +328,13 @@ def suggest_event(request):
         if request.user.department:
             form.initial['department'] = request.user.department
 
-    from .models import Department, EVENT_CATEGORIES
+    from .models import Department
     departments = Department.objects.all()
     
     return render(request, 'mainapp/suggest_event.html', {
         'form': form,
         'departments': departments,
-        'categories': EVENT_CATEGORIES
+        'categories': Event.CATEGORY_CHOICES
     })
 
 def admin_user_details(request, user_id):
