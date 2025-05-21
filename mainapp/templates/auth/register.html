@@ -18,6 +18,23 @@
         <!-- Register Form -->
         <form method="POST" class="space-y-6" id="register-form">
             {% csrf_token %}
+            <!-- Register As Dropdown -->
+            <div>
+                <label for="role" class="block text-sm font-medium text-gray-200">Register As</label>
+                <div class="relative mt-1">
+                    <select name="role" id="role" required
+                            class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-300">
+                        <option value="">Select Role</option>
+                        <option value="student">Student</option>
+                        <option value="admin">Teacher</option>
+                    </select>
+                    <span class="absolute inset-y-0 right-3 flex items-center text-gray-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </span>
+                </div>
+            </div>
             <div>
                 <label for="username" class="block text-sm font-medium text-gray-200">Username</label>
                 <div class="relative mt-1">
@@ -45,18 +62,42 @@
                     </span>
                 </div>
             </div>
-            <div>
-                <label for="enrollment_no" class="block text-sm font-medium text-gray-200">Enrollment No.</label>
-                <div class="relative mt-1">
-                    <input type="text" name="enrollment_no" id="enrollment_no" required
-                           class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-300"
-                           placeholder="Enter your enrollment no." />
-                    <span class="absolute inset-y-0 right-3 flex items-center text-gray-400">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M9 17v-6h13M9 6v6H4a2 2 0 00-2 2v8h20v-8a2 2 0 00-2-2h-5V6h-2v6h-3" />
-                        </svg>
-                    </span>
+            <!-- Student-specific fields -->
+            <div id="student-fields" style="display: none;">
+                <div>
+                    <label for="enrollment_no" class="block text-sm font-medium text-gray-200">Enrollment No.</label>
+                    <div class="relative mt-1">
+                        <input type="text" name="enrollment_no" id="enrollment_no"
+                               class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-300"
+                               placeholder="Enter your enrollment no." />
+                        <span class="absolute inset-y-0 right-3 flex items-center text-gray-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M9 17v-6h13M9 6v6H4a2 2 0 00-2 2v8h20v-8a2 2 0 00-2-2h-5V6h-2v6h-3" />
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Teacher-specific fields -->
+            <div id="teacher-fields" style="display: none;">
+                <div>
+                    <label for="department" class="block text-sm font-medium text-gray-200">Department</label>
+                    <div class="relative mt-1">
+                        <select name="department" id="department"
+                                class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-300">
+                            <option value="">Select Department</option>
+                            {% for dept in departments %}
+                                <option value="{{ dept.id }}">{{ dept.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <span class="absolute inset-y-0 right-3 flex items-center text-gray-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </span>
+                    </div>
                 </div>
             </div>
             <div>
@@ -109,41 +150,107 @@
 <!-- JavaScript for Password Toggle and Form Enhancements -->
 <script>
     // Password visibility toggle
-    const togglePassword = document.getElementById('toggle-password');
-    const passwordInput = document.getElementById('password');
-
-    togglePassword.addEventListener('click', () => {
+    document.getElementById('toggle-password').addEventListener('click', function() {
+        const passwordInput = document.getElementById('password');
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
         passwordInput.setAttribute('type', type);
-        togglePassword.querySelector('svg').innerHTML = type === 'password' ?
-            `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />` :
-            `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />`;
-    });
-
-    // Form validation feedback
-    const form = document.getElementById('register-form');
-    form.addEventListener('submit', (e) => {
-        const username = document.getElementById('username').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value.trim();
-        const password2 = document.getElementById('password2').value.trim();
-
-        if (username === '' || email === '' || password === '' || password2 === '') {
-            e.preventDefault();
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'p-3 bg-red-500/20 text-red-300 rounded-lg text-sm text-center mt-4 animate-fadeIn';
-            errorDiv.textContent = 'Please fill in all fields.';
-            form.insertBefore(errorDiv, form.firstChild);
-            setTimeout(() => errorDiv.remove(), 3000);
-        } else if (password !== password2) {
-            e.preventDefault();
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'p-3 bg-red-500/20 text-red-300 rounded-lg text-sm text-center mt-4 animate-fadeIn';
-            errorDiv.textContent = 'Passwords do not match.';
-            form.insertBefore(errorDiv, form.firstChild);
-            setTimeout(() => errorDiv.remove(), 3000);
+        
+        // Update icon
+        const svg = this.querySelector('svg');
+        if (type === 'text') {
+            svg.innerHTML = `
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+            `;
+        } else {
+            svg.innerHTML = `
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            `;
         }
     });
+
+    // Role-based field visibility
+    document.getElementById('role').addEventListener('change', function() {
+        const studentFields = document.getElementById('student-fields');
+        const teacherFields = document.getElementById('teacher-fields');
+        const enrollmentInput = document.getElementById('enrollment_no');
+        const departmentSelect = document.getElementById('department');
+
+        // Hide all role-specific fields first
+        studentFields.style.display = 'none';
+        teacherFields.style.display = 'none';
+        enrollmentInput.required = false;
+        departmentSelect.required = false;
+
+        // Show fields based on selected role
+        if (this.value === 'student') {
+            studentFields.style.display = 'block';
+            enrollmentInput.required = true;
+            // Add animation class
+            studentFields.classList.add('animate-fadeIn');
+        } else if (this.value === 'admin') {
+            teacherFields.style.display = 'block';
+            departmentSelect.required = true;
+            // Add animation class
+            teacherFields.classList.add('animate-fadeIn');
+        }
+    });
+
+    // Form validation
+    document.getElementById('register-form').addEventListener('submit', function(e) {
+        const password = document.getElementById('password').value;
+        const password2 = document.getElementById('password2').value;
+        const role = document.getElementById('role').value;
+
+        if (password !== password2) {
+            e.preventDefault();
+            alert('Passwords do not match!');
+            return;
+        }
+
+        if (role === 'student' && !document.getElementById('enrollment_no').value) {
+            e.preventDefault();
+            alert('Please enter your enrollment number!');
+            return;
+        }
+
+        if (role === 'admin' && !document.getElementById('department').value) {
+            e.preventDefault();
+            alert('Please select your department!');
+            return;
+        }
+    });
+</script>
+<div class="form-group">
+    <label for="id_role" class="block text-sm font-medium text-gray-200">Register as:</label>
+    <select name="role" id="id_role" class="form-control block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-300" required>
+        <option value="student">Student</option>
+        <option value="admin">Teacher</option>
+    </select>
+</div>
+<div id="student-fields">
+    <label for="enrollment_no" class="block text-sm font-medium text-gray-200">Enrollment No.</label>
+    <div class="relative mt-1">
+        <input type="text" name="enrollment_no" id="enrollment_no" required class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-300" placeholder="Enter your enrollment no." />
+    </div>
+</div>
+<div id="teacher-fields" style="display:none;">
+    <label for="department" class="block text-sm font-medium text-gray-200">Department</label>
+    <div class="relative mt-1">
+        <input type="text" name="department" id="department" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-300" placeholder="Enter department (for teachers)" />
+    </div>
+</div>
+<script>
+document.getElementById('id_role').addEventListener('change', function() {
+  var studentFields = document.getElementById('student-fields');
+  var teacherFields = document.getElementById('teacher-fields');
+  if (this.value === 'student') {
+    studentFields.style.display = '';
+    teacherFields.style.display = 'none';
+  } else {
+    studentFields.style.display = 'none';
+    teacherFields.style.display = '';
+  }
+});
 </script>
 {% endblock %}

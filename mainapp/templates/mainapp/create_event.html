@@ -31,46 +31,95 @@
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
 
-        <!-- Event Name -->
+        <!-- Event Title -->
         <div class="mb-4">
-            <label for="event_name" class="block text-sm font-medium text-gray-200">Event Name</label>
-            <input type="text" id="event_name" name="event_name" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" placeholder="Enter event name" required>
+            <label for="id_title" class="block text-sm font-medium text-gray-200">Event Title</label>
+            <input type="text" id="id_title" name="title" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" placeholder="Enter event title" value="{{ form.title.value|default:'' }}" required>
+            {% if form.title.errors %}
+                <p class="text-red-400 text-xs mt-1">{{ form.title.errors.0 }}</p>
+            {% endif %}
         </div>
 
         <!-- Event Description -->
         <div class="mb-4">
-            <label for="description" class="block text-sm font-medium text-gray-200">Event Description</label>
-            <textarea id="description" name="description" rows="4" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" placeholder="Describe the event" required></textarea>
+            <label for="id_description" class="block text-sm font-medium text-gray-200">Event Description</label>
+            <textarea id="id_description" name="description" rows="4" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" placeholder="Describe the event" required>{{ form.description.value|default:'' }}</textarea>
+            {% if form.description.errors %}
+                <p class="text-red-400 text-xs mt-1">{{ form.description.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Event Category -->
+        <div class="mb-4">
+            <label for="id_category" class="block text-sm font-medium text-gray-200">Event Category</label>
+            <select id="id_category" name="category" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" required>
+                <option value="">Select Category</option>
+                {% for category_value, category_name in categories %}
+                    <option value="{{ category_value }}" {% if form.category.value == category_value %}selected{% endif %}>{{ category_name }}</option>
+                {% endfor %}
+            </select>
+            {% if form.category.errors %}
+                <p class="text-red-400 text-xs mt-1">{{ form.category.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Department -->
+        <div class="mb-4">
+            <label for="id_department" class="block text-sm font-medium text-gray-200">Department</label>
+            <select id="id_department" name="department" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" required>
+                <option value="">Select Department</option>
+                {% for department in departments %}
+                    <option value="{{ department.id }}" {% if form.department.value == department.id %}selected{% endif %}>{{ department.name }}</option>
+                {% endfor %}
+            </select>
+            {% if form.department.errors %}
+                <p class="text-red-400 text-xs mt-1">{{ form.department.errors.0 }}</p>
+            {% endif %}
         </div>
 
         <!-- Event Date -->
         <div class="mb-4">
-            <label for="event_date" class="block text-sm font-medium text-gray-200">Event Date</label>
-            <input type="date" id="event_date" name="event_date" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" required>
+            <label for="id_date" class="block text-sm font-medium text-gray-200">Event Date</label>
+            <input type="date" id="id_date" name="date" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" value="{{ form.date.value|date:'Y-m-d'|default:'' }}" required>
+            {% if form.date.errors %}
+                <p class="text-red-400 text-xs mt-1">{{ form.date.errors.0 }}</p>
+            {% endif %}
         </div>
 
         <!-- Event Time -->
         <div class="mb-4">
-            <label for="event_time" class="block text-sm font-medium text-gray-200">Event Time</label>
-            <input type="time" id="event_time" name="event_time" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" required>
+            <label for="id_time" class="block text-sm font-medium text-gray-200">Event Time</label>
+            <input type="time" id="id_time" name="time" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" value="{{ form.time.value|time:'H:i'|default:'' }}" required>
+            {% if form.time.errors %}
+                <p class="text-red-400 text-xs mt-1">{{ form.time.errors.0 }}</p>
+            {% endif %}
         </div>
 
         <!-- Event Location -->
         <div class="mb-4">
-            <label for="location" class="block text-sm font-medium text-gray-200">Event Location</label>
-            <input type="text" id="location" name="location" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" placeholder="Enter event location" required>
+            <label for="id_location" class="block text-sm font-medium text-gray-200">Event Location</label>
+            <input type="text" id="id_location" name="location" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" placeholder="Enter event location" value="{{ form.location.value|default:'' }}" required>
+            {% if form.location.errors %}
+                <p class="text-red-400 text-xs mt-1">{{ form.location.errors.0 }}</p>
+            {% endif %}
         </div>
 
         <!-- Event Image -->
         <div class="mb-4">
-            <label for="image" class="block text-sm font-medium text-gray-200">Event Image</label>
-            <input type="file" id="image" name="image" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg">
+            <label for="id_image" class="block text-sm font-medium text-gray-200">Event Image</label>
+            <input type="file" id="id_image" name="image" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg">
+            {% if form.image.errors %}
+                <p class="text-red-400 text-xs mt-1">{{ form.image.errors.0 }}</p>
+            {% endif %}
         </div>
 
-        <!-- Ticket Price -->
+        <!-- Available Tickets -->
         <div class="mb-4">
-            <label for="ticket_price" class="block text-sm font-medium text-gray-200">Ticket Price</label>
-            <input type="number" step="0.01" id="ticket_price" name="ticket_price" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" placeholder="Enter ticket price" required>
+            <label for="id_available_tickets" class="block text-sm font-medium text-gray-200">Available Tickets</label>
+            <input type="number" id="id_available_tickets" name="available_tickets" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" placeholder="Enter number of available tickets" value="{{ form.available_tickets.value|default:'' }}" required>
+            {% if form.available_tickets.errors %}
+                <p class="text-red-400 text-xs mt-1">{{ form.available_tickets.errors.0 }}</p>
+            {% endif %}
         </div>
 
         <button type="submit" class="w-full bg-yellow-400 text-gray-900 font-semibold py-3 rounded-lg hover:bg-yellow-500">Create Event</button>

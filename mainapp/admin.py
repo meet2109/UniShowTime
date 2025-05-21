@@ -25,11 +25,15 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('title', 'department', 'date', 'time', 'location', 'available_tickets', 'is_active')
-    list_filter = ('department', 'is_active', 'date')
+    list_display = ('title', 'department', 'date', 'location', 'available_tickets', 'tickets_left')
+    list_filter = ('department', 'date', 'category')
     search_fields = ('title', 'description', 'location')
     autocomplete_fields = ['department', 'created_by']
     ordering = ['-date']
+    
+    def tickets_left(self, obj):
+        return obj.tickets_left()
+    tickets_left.short_description = 'Tickets Left'
 
 @admin.register(Ticket)
 class TicketAdmin(admin.ModelAdmin):

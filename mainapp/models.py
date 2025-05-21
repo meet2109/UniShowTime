@@ -40,23 +40,26 @@ class CustomUser(AbstractUser, PermissionsMixin):
         return self.role == 'superadmin'
 
 class Event(models.Model):
-    title = models.CharField(max_length=255)
+    CATEGORY_CHOICES = (
+        ('seminar', 'Seminar'),
+        ('concert', 'Concert'),
+        ('stage_event', 'Stage Event'),
+        ('educational', 'Educational'),
+        ('other', 'Other'),
+    )
+    
+    title = models.CharField(max_length=200)
     description = models.TextField()
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
-    created_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, related_name="events_created")
-    date = models.DateField()
-    time = models.TimeField()
-    location = models.CharField(max_length=255)
-    available_tickets = models.PositiveIntegerField(default=100)
-    image = models.ImageField(upload_to='event_images/', blank=True, null=True)
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['-date', 'time']
-
+    date = models.DateTimeField()
+    location = models.CharField(max_length=200)
+    image = models.ImageField(upload_to='event_images/', null=True, blank=True)
+    available_tickets = models.IntegerField(default=0)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='events')
+    created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_events')
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='other')
+    
     def __str__(self):
-        return f"{self.title} - {self.department.code}"
+        return self.title
 
     def tickets_left(self):
         return self.available_tickets - self.ticket_set.count()

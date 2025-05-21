@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-7xl p-8 bg-gray-800 rounded-2xl shadow-2xl transform transition-all hover:scale-105 glow-effect">
+        <h2 class="text-3xl font-bold mb-8 text-center text-yellow-400 tracking-tight"><i class="fas fa-user-graduate mr-2"></i>Student Dashboard</h2>
+
+        <!-- Profile Section -->
+        <div class="flex flex-col md:flex-row items-center md:items-start gap-8 mb-10 p-6 bg-gray-700 rounded-xl shadow-lg" data-aos="fade-right">
+            <div class="w-32 h-32 bg-gray-700 rounded-full overflow-hidden shadow-xl border-4 border-yellow-400 transform transition-all hover:scale-110">
+                {% if user.profile_image %}
+                    <img src="{{ user.profile_image.url }}" alt="Profile Picture" class="w-full h-full object-cover">
+                {% else %}
+                    <div class="w-full h-full flex items-center justify-center bg-yellow-400 text-gray-900 text-3xl font-bold animate-pulse">
+                        {{ user.username|first|upper }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="text-center md:text-left">
+                <h3 class="text-2xl font-bold text-white">{{ user.username }}</h3>
+                <p class="text-gray-400"><i class="fas fa-id-card mr-2"></i>{{ user.enrollment_no }}</p>
+                <p class="text-gray-400"><i class="fas fa-building mr-2"></i>{{ user.department.name }}</p>
+                <p class="text-yellow-400 mt-2"><i class="fas fa-envelope mr-2"></i>{{ user.email }}</p>
+            </div>
+        </div>
+
+        <!-- Upcoming Events Section -->
+        <div class="mb-10" data-aos="fade-up" data-aos-delay="100">
+            <h3 class="text-2xl font-bold text-yellow-400 mb-4"><i class="fas fa-calendar-alt mr-2"></i>Upcoming Events</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for event in events %}
+                    <div class="bg-gray-700 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all hover:scale-105 card-glow">
+                        {% if event.image %}
+                            <img src="{{ event.image.url }}" alt="{{ event.title }}" class="w-full h-48 object-cover">
+                        {% else %}
+                            <div class="w-full h-48 bg-gray-600 flex items-center justify-center">
+                                <span class="text-gray-400"><i class="fas fa-image fa-2x"></i></span>
+                            </div>
+                        {% endif %}
+                        <div class="p-6">
+                            <div class="flex items-center mb-2">
+                                <span class="px-2 py-1 bg-yellow-400 text-xs text-black rounded-full mr-2">{{ event.category }}</span>
+                            </div>
+                            <h4 class="text-xl font-semibold text-white mb-2">{{ event.title }}</h4>
+                            <p class="text-gray-400 text-sm mb-4">{{ event.description|truncatewords:15 }}</p>
+                            <div class="flex justify-between text-sm text-gray-400 mb-4">
+                                <span><i class="far fa-calendar mr-1"></i>{{ event.date }}</span>
+                                <span><i class="far fa-clock mr-1"></i>{{ event.time }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-yellow-400"><i class="fas fa-building mr-1"></i>{{ event.department.name }}</span>
+                                <a href="{% url 'event_details' event.id %}" class="bg-yellow-400 text-black px-4 py-2 rounded-lg hover:bg-yellow-300 transition transform hover:-translate-y-1 hover:shadow-lg">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-span-3 text-center py-10 bg-gray-700 rounded-lg">
+                        <p class="text-gray-400"><i class="fas fa-calendar-times fa-3x mb-4"></i><br>No upcoming events available.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Event Memories Section -->
+        <div class="mb-10" data-aos="fade-up" data-aos-delay="200">
+            <h3 class="text-2xl font-bold text-yellow-400 mb-4"><i class="fas fa-photo-video mr-2"></i>Event Memories</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for memory in past_events %}
+                    <div class="bg-gray-700 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all hover:scale-105 card-glow">
+                        {% if memory.image %}
+                            <img src="{{ memory.image.url }}" alt="{{ memory.title }}" class="w-full h-48 object-cover">
+                        {% else %}
+                            <div class="w-full h-48 bg-gray-600 flex items-center justify-center">
+                                <span class="text-gray-400"><i class="fas fa-image fa-2x"></i></span>
+                            </div>
+                        {% endif %}
+                        <div class="p-6">
+                            <div class="flex items-center mb-2">
+                                <span class="px-2 py-1 bg-yellow-400 text-xs text-black rounded-full mr-2">{{ memory.category }}</span>
+                            </div>
+                            <h4 class="text-xl font-semibold text-white mb-2">{{ memory.title }}</h4>
+                            <p class="text-gray-400 text-sm mb-4">{{ memory.description|truncatewords:15 }}</p>
+                            <div class="flex justify-between text-sm text-gray-400 mb-4">
+                                <span><i class="far fa-calendar mr-1"></i>{{ memory.date }}</span>
+                                <span><i class="far fa-clock mr-1"></i>{{ memory.time }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-yellow-400"><i class="fas fa-building mr-1"></i>{{ memory.department.name }}</span>
+                                <a href="{% url 'event_memories' memory.id %}" class="bg-yellow-400 text-black px-4 py-2 rounded-lg hover:bg-yellow-300 transition transform hover:-translate-y-1 hover:shadow-lg">View Gallery</a>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-span-3 text-center py-10 bg-gray-700 rounded-lg">
+                        <p class="text-gray-400"><i class="fas fa-photo-video fa-3x mb-4"></i><br>No past event memories available.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- My Attended Events Section -->
+        <div data-aos="fade-up" data-aos-delay="300">
+            <h3 class="text-2xl font-bold text-yellow-400 mb-4"><i class="fas fa-ticket-alt mr-2"></i>My Attended Events</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for attendance in attended_events %}
+                    <div class="bg-gray-700 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all hover:scale-105 card-glow">
+                        <div class="p-6">
+                            <h4 class="text-xl font-semibold text-white mb-2">{{ attendance.event.title }}</h4>
+                            <div class="flex justify-between text-sm text-gray-400 mb-4">
+                                <span><i class="far fa-calendar mr-1"></i>{{ attendance.event.date }}</span>
+                                <span><i class="far fa-clock mr-1"></i>{{ attendance.event.time }}</span>
+                            </div>
+                            <p class="text-gray-400 text-sm mb-4"><i class="fas fa-map-marker-alt mr-1"></i>{{ attendance.event.location }}</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-yellow-400"><i class="fas fa-building mr-1"></i>{{ attendance.event.department.name }}</span>
+                                <a href="{% url 'event_details' attendance.event.id %}" class="bg-yellow-400 text-black px-4 py-2 rounded-lg hover:bg-yellow-300 transition transform hover:-translate-y-1 hover:shadow-lg">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-span-3 text-center py-10 bg-gray-700 rounded-lg">
+                        <p class="text-gray-400"><i class="fas fa-ticket-alt fa-3x mb-4"></i><br>You haven't attended any events yet.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

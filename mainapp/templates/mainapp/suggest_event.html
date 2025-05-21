@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto p-8 bg-gray-800 rounded-2xl shadow-xl">
+    <h2 class="text-3xl font-bold text-center text-yellow-400 mb-8">Suggest an Event</h2>
+
+    <!-- Success and Error Messages -->
+    {% if messages %}
+        <div class="mb-6 space-y-2">
+            {% for message in messages %}
+                <div class="p-3 {% if message.tags == 'success' %}bg-green-500/20 text-green-300{% else %}bg-red-500/20 text-red-300{% endif %} rounded-lg text-sm text-center animate-fadeIn">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Display form errors -->
+    {% if form.errors %}
+        <div class="mb-4 bg-red-500/20 text-red-300 rounded-lg p-4">
+            <ul>
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ field.name }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <div class="mb-6 bg-yellow-400/10 text-yellow-300 p-4 rounded-lg">
+        <p>Have an idea for an event? Suggest it here and our admins will review it!</p>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <!-- Event Title -->
+        <div class="mb-4">
+            <label for="id_title" class="block text-sm font-medium text-gray-200">Event Title</label>
+            <input type="text" id="id_title" name="title" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" placeholder="Enter event title" value="{{ form.title.value|default:'' }}" required>
+            {% if form.title.errors %}
+                <p class="text-red-400 text-xs mt-1">{{ form.title.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Event Description -->
+        <div class="mb-4">
+            <label for="id_description" class="block text-sm font-medium text-gray-200">Event Description</label>
+            <textarea id="id_description" name="description" rows="4" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" placeholder="Describe the event" required>{{ form.description.value|default:'' }}</textarea>
+            {% if form.description.errors %}
+                <p class="text-red-400 text-xs mt-1">{{ form.description.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Event Category -->
+        <div class="mb-4">
+            <label for="id_category" class="block text-sm font-medium text-gray-200">Event Category</label>
+            <select id="id_category" name="category" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" required>
+                <option value="">Select Category</option>
+                {% for category_value, category_name in categories %}
+                    <option value="{{ category_value }}" {% if form.category.value == category_value %}selected{% endif %}>{{ category_name }}</option>
+                {% endfor %}
+            </select>
+            {% if form.category.errors %}
+                <p class="text-red-400 text-xs mt-1">{{ form.category.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Department -->
+        <div class="mb-4">
+            <label for="id_department" class="block text-sm font-medium text-gray-200">Department</label>
+            <select id="id_department" name="department" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" required>
+                <option value="">Select Department</option>
+                {% for department in departments %}
+                    <option value="{{ department.id }}" {% if form.department.value == department.id %}selected{% endif %}>{{ department.name }}</option>
+                {% endfor %}
+            </select>
+            {% if form.department.errors %}
+                <p class="text-red-400 text-xs mt-1">{{ form.department.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Event Date -->
+        <div class="mb-4">
+            <label for="id_date" class="block text-sm font-medium text-gray-200">Proposed Date</label>
+            <input type="date" id="id_date" name="date" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" value="{{ form.date.value|date:'Y-m-d'|default:'' }}" required>
+            {% if form.date.errors %}
+                <p class="text-red-400 text-xs mt-1">{{ form.date.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Event Time -->
+        <div class="mb-4">
+            <label for="id_time" class="block text-sm font-medium text-gray-200">Proposed Time</label>
+            <input type="time" id="id_time" name="time" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" value="{{ form.time.value|time:'H:i'|default:'' }}" required>
+            {% if form.time.errors %}
+                <p class="text-red-400 text-xs mt-1">{{ form.time.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Event Location -->
+        <div class="mb-4">
+            <label for="id_location" class="block text-sm font-medium text-gray-200">Proposed Location</label>
+            <input type="text" id="id_location" name="location" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" placeholder="Enter event location" value="{{ form.location.value|default:'' }}" required>
+            {% if form.location.errors %}
+                <p class="text-red-400 text-xs mt-1">{{ form.location.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-4">
+            <button type="submit" class="flex-1 bg-yellow-400 text-gray-900 font-semibold py-3 rounded-lg hover:bg-yellow-500">Submit Suggestion</button>
+            <a href="{% url 'student_dashboard' %}" class="flex-1 bg-gray-600 text-white font-semibold py-3 rounded-lg hover:bg-gray-500 text-center">Cancel</a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
