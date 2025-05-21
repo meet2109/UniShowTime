@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="flex items-center justify-center min-h-screen">
-    <div class="w-full max-w-7xl p-8 bg-gray-800 rounded-2xl shadow-2xl transform transition-all hover:scale-105 glow-effect">
+    <div class="w-full max-w-7xl p-8 bg-gray-800 rounded-2xl shadow-2xl">
         <h2 class="text-3xl font-bold mb-8 text-center text-yellow-400 tracking-tight"><i class="fas fa-user-shield mr-2"></i>Admin Dashboard</h2>
 
         <!-- Stats Section -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-aos="fade-up">
-            <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 text-black p-6 rounded-lg shadow-lg transform transition-all hover:scale-105 hover:shadow-xl">
+            <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 text-black p-6 rounded-lg shadow-lg">
                 <div class="flex items-center justify-between">
                     <h3 class="text-xl font-semibold">Total Events</h3>
                     <i class="fas fa-calendar-alt text-2xl opacity-70"></i>
@@ -16,7 +16,7 @@
                     <div class="h-full bg-black bg-opacity-40 rounded-full" style="width: 75%"></div>
                 </div>
             </div>
-            <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 text-black p-6 rounded-lg shadow-lg transform transition-all hover:scale-105 hover:shadow-xl">
+            <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 text-black p-6 rounded-lg shadow-lg">
                 <div class="flex items-center justify-between">
                     <h3 class="text-xl font-semibold">Total Bookings</h3>
                     <i class="fas fa-ticket-alt text-2xl opacity-70"></i>
@@ -26,7 +26,7 @@
                     <div class="h-full bg-black bg-opacity-40 rounded-full" style="width: 60%"></div>
                 </div>
             </div>
-            <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 text-black p-6 rounded-lg shadow-lg transform transition-all hover:scale-105 hover:shadow-xl">
+            <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 text-black p-6 rounded-lg shadow-lg">
                 <div class="flex items-center justify-between">
                     <h3 class="text-xl font-semibold">Upcoming Events</h3>
                     <i class="fas fa-hourglass-half text-2xl opacity-70"></i>
@@ -43,7 +43,7 @@
             <h3 class="text-2xl font-bold text-yellow-400 mb-4"><i class="fas fa-calendar-check mr-2"></i>Manage Events</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {% for event in events %}
-                    <div class="bg-gray-700 text-white p-6 rounded-lg shadow-lg transform transition-all hover:scale-105 hover:shadow-xl card-glow">
+                    <div class="bg-gray-700 text-white p-6 rounded-lg shadow-lg">
                         <div class="flex justify-between items-start mb-4">
                             <h4 class="text-xl font-semibold">{{ event.title }}</h4>
                             <span class="px-2 py-1 bg-yellow-400 text-xs text-black rounded-full">{{ event.category }}</span>
@@ -72,10 +72,18 @@
 
         <!-- Manage Users Section -->
         <div class="mt-10" data-aos="fade-up" data-aos-delay="200">
-            <h3 class="text-2xl font-bold text-yellow-400 mb-4"><i class="fas fa-users-cog mr-2"></i>Manage Users</h3>
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold text-yellow-400"><i class="fas fa-users-cog mr-2"></i>Manage Users</h3>
+                <select class="bg-gray-700 text-white px-4 py-2 rounded-lg border border-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400" onchange="window.location.href=this.value">
+                    <option value="">Filter by Role</option>
+                    <option value="?role=student">Students</option>
+                    <option value="?role=admin">Teachers</option>
+                    <option value="?role=superadmin">Admins</option>
+                </select>
+            </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {% for user in users %}
-                    <div class="bg-gray-700 text-white p-6 rounded-lg shadow-lg transform transition-all hover:scale-105 hover:shadow-xl card-glow">
+                    <div class="bg-gray-700 text-white p-6 rounded-lg shadow-lg">
                         <div class="flex items-center space-x-4 mb-4">
                             <div class="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-black font-bold">
                                 {{ user.username|first|upper }}
