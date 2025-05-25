@@ -46,10 +46,16 @@ class CustomLoginForm(AuthenticationForm):
 class EventForm(forms.ModelForm):
     # Add a time field that doesn't exist in the model
     time = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
+    ticket_price = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        min_value=0,
+        widget=forms.NumberInput(attrs={'step': '0.01', 'min': '0'})
+    )
     
     class Meta:
         model = Event
-        fields = ['title', 'description', 'date', 'location', 'image', 'available_tickets', 'department', 'category']
+        fields = ['title', 'description', 'date', 'location', 'image', 'available_tickets', 'ticket_price', 'department', 'category']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
             'description': forms.Textarea(attrs={'rows': 4}),

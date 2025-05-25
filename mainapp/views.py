@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
+from django.template.loader import render_to_string
 from django.utils import timezone
 
 from .forms import CustomUserRegisterForm, CustomLoginForm
@@ -120,11 +121,24 @@ def admin_dashboard(request):
     if request.user.role not in ['admin', 'superadmin']:
         return redirect('dashboard')
         
-    total_events = Event.objects.count()
-    total_bookings = sum(event.ticket_set.count() for event in Event.objects.all())
-    upcoming_events = Event.objects.filter(date__gte=timezone.now()).count()
+    # Apply filters
     events = Event.objects.all()
     users = CustomUser.objects.all()
+    
+    # Filter users by role
+    role_filter = request.GET.get('role')
+    if role_filter:
+        users = users.filter(role=role_filter)
+    
+    # Filter events by category
+    category_filter = request.GET.get('category')
+    if category_filter:
+        events = events.filter(category=category_filter)
+        
+    # Calculate statistics
+    total_events = Event.objects.count()
+    total_bookings = Ticket.objects.count()
+    upcoming_events = Event.objects.filter(date__gte=timezone.now()).count()
 
     return render(request, 'dashboard/admin_dashboard.html', {
         'total_events': total_events,
@@ -135,16 +149,93 @@ def admin_dashboard(request):
     })
 
 @login_required
+def filter_events(request):
+    if request.user.role not in ['admin', 'superadmin']:
+        return HttpResponseForbidden()
+    
+    category = request.GET.get('category')
+    search = request.GET.get('search', '').strip()
+    events = Event.objects.all()
+    
+    if category:
+        events = events.filter(category=category)
+    if search:
+        events = events.filter(
+            title__icontains=search
+        )
+    
+    html = render_to_string('dashboard/partials/event_list.html', {
+        'events': events
+    })
+    
+    return JsonResponse({'html': html})
+
+@login_required
+def filter_users(request):
+    if request.user.role not in ['admin', 'superadmin']:
+        return HttpResponseForbidden()
+    
+    role = request.GET.get('role')
+    search = request.GET.get('search', '').strip()
+    users = CustomUser.objects.all()
+    
+    if role:
+        users = users.filter(role=role)
+    if search:
+        users = users.filter(
+            username__icontains=search
+        )
+    
+    html = render_to_string('dashboard/partials/user_list.html', {
+        'users': users
+    })
+    
+    return JsonResponse({'html': html})
+
 def event_details(request, event_id):
     event = get_object_or_404(Event, id=event_id)
-    tickets_available = event.tickets_left()
-    user_has_ticket = Ticket.objects.filter(event=event, user=request.user).exists()
+    user_has_ticket = False
+    user_ticket = None
     
-    return render(request, 'mainapp/event_details.html', {
+    if request.user.is_authenticated:
+        user_ticket = Ticket.objects.filter(event=event, user=request.user).first()
+        user_has_ticket = user_ticket is not None
+    
+    context = {
         'event': event,
-        'tickets_available': tickets_available,
-        'user_has_ticket': user_has_ticket
-    })
+        'user_has_ticket': user_has_ticket,
+        'user_ticket': user_ticket
+    }
+    return render(request, 'mainapp/event_detail.html', context)
+
+@login_required
+def book_ticket(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    
+    # Check if user already has a ticket
+    if Ticket.objects.filter(event=event, user=request.user).exists():
+        messages.error(request, 'You already have a ticket for this event!')
+        return redirect('event_details', event_id=event_id)
+    
+    # Check if tickets are available
+    if event.tickets_left() <= 0:
+        messages.error(request, 'Sorry, this event is sold out!')
+        return redirect('event_details', event_id=event_id)
+    
+    # Handle payment if event is not free
+    if not event.is_free:
+        # Add your payment processing logic here
+        # For now, we'll just create the ticket
+        pass
+    
+    # Create ticket
+    ticket = Ticket.objects.create(
+        event=event,
+        user=request.user
+    )
+    
+    messages.success(request, 'Ticket booked successfully!')
+    return redirect('qr_view', ticket_id=ticket.id)
 
 @login_required
 def admin_event_details(request, event_id):

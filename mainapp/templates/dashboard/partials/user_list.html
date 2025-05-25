@@ -1,0 +1,20 @@
+{% for user in users %}
+    <div class="bg-gray-700 text-white p-6 rounded-lg shadow-lg">
+        <div class="flex items-center space-x-4 mb-4">
+            <div class="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-black font-bold">
+                {{ user.username|first|upper }}
+            </div>
+            <div>
+                <h4 class="text-xl font-semibold">{{ user.username }}</h4>
+                <p class="text-yellow-400 text-sm">{{ user.role }}</p>
+            </div>
+        </div>
+        <div class="flex justify-between items-center mt-4">
+            <span class="text-gray-400 text-sm"><i class="fas fa-envelope mr-1"></i>{{ user.email }}</span>
+            <a href="{% url 'admin_user_details' user.id %}" class="text-yellow-400 hover:text-yellow-300 flex items-center">
+                <span>View Details</span>
+                <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+    </div>
+{% endfor %}

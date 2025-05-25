@@ -1,0 +1,38 @@
+{% for event in events %}
+    <div class="bg-gray-700 text-white p-6 rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-200">
+        <div class="flex justify-between items-start mb-4">
+            <h4 class="text-xl font-semibold">{{ event.title }}</h4>
+            <span class="px-2 py-1 bg-yellow-400 text-xs text-black rounded-full">{{ event.category }}</span>
+        </div>
+        <p class="text-gray-400 mt-2">{{ event.description|truncatewords:20 }}</p>
+        <div class="flex justify-between items-center mt-4 text-sm text-gray-400">
+            <span><i class="far fa-calendar mr-1"></i>{{ event.date|date:"F j, Y" }}</span>
+            <span><i class="fas fa-map-marker-alt mr-1"></i>{{ event.location }}</span>
+        </div>
+        <div class="mt-4 flex justify-between items-center">
+            <div class="flex flex-col">
+                <span class="text-yellow-400"><i class="fas fa-users mr-1"></i>{{ event.tickets_left }} tickets left</span>
+                <span class="text-sm mt-1">
+                    {% if event.is_free %}
+                        <span class="text-green-400">Free Entry</span>
+                    {% else %}
+                        <span class="text-yellow-400">${{ event.ticket_price }}</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="flex items-center space-x-2">
+                {% if request.user.role == 'admin' or request.user.role == 'superadmin' %}
+                    <a href="{% url 'admin_event_details' event.id %}" class="text-yellow-400 hover:text-yellow-300 flex items-center">
+                        <span>Manage</span>
+                        <i class="fas fa-cog ml-1"></i>
+                    </a>
+                {% else %}
+                    <a href="{% url 'event_details' event.id %}" class="text-yellow-400 hover:text-yellow-300 flex items-center">
+                        <span>Book Now</span>
+                        <i class="fas fa-ticket-alt ml-1"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endfor %}

@@ -6,6 +6,9 @@ def home_redirect(request):
     return redirect('dashboard')
 
 urlpatterns = [
+    # Filter endpoints
+    path('filter-events/', views.filter_events, name='filter_events'),
+    path('filter-users/', views.filter_users, name='filter_users'),
     path('', home_redirect),
     path('superadmin/', views.superadmin_dashboard, name='superadmin_dashboard'),
     path('user/<int:user_id>/', views.admin_user_details, name='admin_user_details'),
@@ -20,6 +23,7 @@ urlpatterns = [
     path('ticket/<int:ticket_id>/qr/', views.qr_view, name='qr_view'),
     path('ticket/<int:ticket_id>/download/', views.qr_download, name='qr_download'),
     path('event/<int:event_id>/', views.event_details, name='event_details'),
+    path('event/<int:event_id>/book/', views.book_ticket, name='book_ticket'),
     path('event/<int:event_id>/admin/', views.admin_event_details, name='admin_event_details'),
     path('event/<int:event_id>/memories/', views.event_memories, name='event_memories'),
     path('department/<int:department_id>/', views.department_details, name='department_details'),

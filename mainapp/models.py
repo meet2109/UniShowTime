@@ -58,6 +58,7 @@ class Event(models.Model):
     location = models.CharField(max_length=200)
     image = models.ImageField(upload_to='event_images/', null=True, blank=True)
     available_tickets = models.IntegerField(default=0)
+    ticket_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='events')
     created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_events')
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='other')
@@ -67,6 +68,10 @@ class Event(models.Model):
 
     def tickets_left(self):
         return self.available_tickets - self.ticket_set.count()
+
+    @property
+    def is_free(self):
+        return self.ticket_price == 0
 
 class Ticket(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
@@ -81,12 +86,14 @@ class Ticket(models.Model):
         return f"{self.user.enrollment_no} | {self.event.title}"
 
     def save(self, *args, **kwargs):
+        if not self.booked_at:
+            self.booked_at = timezone.now()
         if not self.qr_code:
             data = {
                 "username": self.user.username,
                 "enrollment_no": self.user.enrollment_no,
                 "event": self.event.title,
-                "date": str(self.event.date),
+                "date": str(self.event.date) if self.event.date else "Not scheduled",
                 "booked_at": self.booked_at.strftime("%Y-%m-%d %H:%M:%S")
             }
             qr_img = qrcode.make(json.dumps(data))
