@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block content %}
+{% load static %}
+
+<script>
+function confirmRestore(backupId) {
+    return confirm(`Are you sure you want to restore backup ${backupId}? This will overwrite current data.`);
+}
+
+function downloadBackup(filePath) {
+    // Create a temporary link element
+    const link = document.createElement('a');
+    link.href = filePath;
+    link.download = filePath.split('/').pop();
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function updateBackupStats() {
+    const totalBackups = document.querySelectorAll('tbody tr').length;
+    const storageUsed = Array.from(document.querySelectorAll('[data-filesize]'))
+        .reduce((total, el) => total + parseInt(el.dataset.filesize), 0);
+    
+    document.getElementById('total-backups').textContent = totalBackups;
+    document.getElementById('storage-used').textContent = formatFileSize(storageUsed);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateBackupStats();
+});
+</script>
+<div class="flex min-h-screen w-full bg-gray-900">
+    <!-- Sidebar -->
+    <aside class="w-full max-w-xs bg-gray-800 p-8 rounded-r-2xl shadow-2xl flex flex-col items-center justify-start">
+        <h2 class="text-3xl font-bold mb-8 text-center text-yellow-400 tracking-tight"><i class="fas fa-database mr-2"></i>Backup Manager</h2>
+        <nav class="w-full space-y-4">
+            <button class="block w-full px-6 py-3 rounded-lg bg-yellow-400 text-black hover:bg-yellow-300 transition-colors">
+                <i class="fas fa-history mr-2"></i>Backup History
+            </button>
+            <button class="block w-full px-6 py-3 rounded-lg bg-gray-700 text-white hover:bg-yellow-400 hover:text-black transition-colors">
+                <i class="fas fa-cloud-upload-alt mr-2"></i>Auto Backup
+            </button>
+            <button class="block w-full px-6 py-3 rounded-lg bg-gray-700 text-white hover:bg-yellow-400 hover:text-black transition-colors">
+                <i class="fas fa-cog mr-2"></i>Backup Settings
+            </button>
+        </nav>
+
+        <!-- Quick Actions -->
+        <div class="w-full mt-8 space-y-4">
+            <form method="POST" class="w-full space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="create_backup">
+                <button type="submit" class="w-full px-6 py-4 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors flex items-center justify-center">
+                    <i class="fas fa-plus-circle mr-2"></i>Create New Backup
+                </button>
+            </form>
+            <button onclick="showRestoreModal()" class="w-full px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors flex items-center justify-center">
+                <i class="fas fa-cloud-download-alt mr-2"></i>Restore Backup
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8">
+        <!-- Backup Statistics -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-gray-800 rounded-lg p-6 shadow-lg" data-aos="fade-up">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400">Total Backups</p>
+                        <h3 class="text-3xl font-bold text-white" id="total-backups">{{ total_backups }}</h3>
+                    </div>
+                    <div class="p-3 bg-blue-500 bg-opacity-20 rounded-full">
+                        <i class="fas fa-save text-blue-500 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-6 shadow-lg" data-aos="fade-up" data-aos-delay="100">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400">Storage Used</p>
+                        <h3 class="text-3xl font-bold text-white" id="storage-used">{{ storage_used|filesizeformat }}</h3>
+                    </div>
+                    <div class="p-3 bg-yellow-500 bg-opacity-20 rounded-full">
+                        <i class="fas fa-hdd text-yellow-500 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-6 shadow-lg" data-aos="fade-up" data-aos-delay="200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400">Last Backup</p>
+                        <h3 class="text-3xl font-bold text-white">{% if last_backup %}{{ last_backup.created_at|timesince }} ago{% else %}Never{% endif %}</h3>
+                    </div>
+                    <div class="p-3 bg-green-500 bg-opacity-20 rounded-full">
+                        <i class="fas fa-clock text-green-500 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Backup History Table -->
+        <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden" data-aos="fade-up" data-aos-delay="300">
+            <div class="p-6 border-b border-gray-700">
+                <h3 class="text-xl font-bold text-white">Backup History</h3>
+            </div>
+            <table class="w-full">
+                <thead>
+                    <tr class="bg-gray-700">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Backup ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Size</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-700">
+                    <!-- Sample Backup Entries -->
+                    {% for backup in backups %}
+                    <tr class="hover:bg-gray-700 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{{ backup.backup_id }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{{ backup.created_at|date:"Y-m-d H:i:s" }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{{ backup.file_size|filesizeformat }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{{ backup.backup_type }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {% if backup.status == 'COMPLETED' %}bg-green-100 text-green-800{% elif backup.status == 'FAILED' %}bg-red-100 text-red-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">{{ backup.status }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                            <form method="POST" class="inline" onsubmit="return confirmRestore('{{ backup.backup_id }}')">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="restore_backup">
+                                <input type="hidden" name="backup_id" value="{{ backup.backup_id }}">
+                                <button type="submit" class="text-blue-400 hover:text-blue-300 mr-3" title="Restore this backup"><i class="fas fa-undo-alt"></i></button>
+                            </form>
+                            <button onclick="downloadBackup('{{ backup.file_path }}')" class="text-blue-400 hover:text-blue-300 mr-3" title="Download backup file"><i class="fas fa-download"></i></button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-gray-400">No backups found.</td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="hover:bg-gray-700 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">#BK2401202</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">2024-01-20 16:45:30</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">128 MB</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">Incremental</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">In Progress</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                            <button class="text-blue-400 hover:text-blue-300 mr-3" disabled><i class="fas fa-download"></i></button>
+                            <button class="text-red-400 hover:text-red-300" disabled><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Backup Settings Section -->
+        <div class="mt-8 bg-gray-800 rounded-lg p-6 shadow-lg" data-aos="fade-up" data-aos-delay="400">
+            <h3 class="text-xl font-bold text-white mb-6">Backup Settings</h3>
+            <form class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Backup Frequency</label>
+                        <select class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+                            <option>Daily</option>
+                            <option>Weekly</option>
+                            <option>Monthly</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Retention Period</label>
+                        <select class="w-full px-4 py-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+                            <option>7 Days</option>
+                            <option>30 Days</option>
+                            <option>90 Days</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex items-center mt-4">
+                    <input type="checkbox" class="h-4 w-4 text-yellow-400 focus:ring-yellow-400 border-gray-600 rounded">
+                    <label class="ml-2 text-sm text-gray-300">Enable automatic cleanup of old backups</label>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}

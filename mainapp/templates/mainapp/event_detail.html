@@ -64,12 +64,16 @@
                                                     <input type="text" name="expiry" placeholder="MM/YY" class="px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:outline-none focus:border-yellow-400">
                                                     <input type="text" name="cvv" placeholder="CVV" class="px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:outline-none focus:border-yellow-400">
                                                 </div>
+                                            <!-- GPay and PhonePe options -->
+                                            <div class="flex space-x-4 mt-4">
+                                                <button type="button" class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-400 transition duration-200">GPay</button>
+                                                <button type="button" class="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-400 transition duration-200">PhonePe</button>
                                             </div>
                                         </div>
                                     {% endif %}
                                     <button type="submit" class="w-full bg-yellow-400 text-black py-3 px-4 rounded-lg hover:bg-yellow-300 transition duration-200 flex items-center justify-center">
                                         <i class="fas fa-ticket-alt mr-2"></i>
-                                        {% if event.is_free %}Book Free Ticket{% else %}Purchase Ticket{% endif %}
+                                        {% if event.is_free %}Book Free Ticket{% else %}Purchase Ticket for ₹{{ event.ticket_price }}{% endif %}
                                     </button>
                                 </form>
                             {% else %}

@@ -5,9 +5,13 @@ from django.contrib import messages
 from django.http import HttpResponseForbidden, JsonResponse
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.conf import settings
+from django.db import models, transaction
+import os
+import json
 
 from .forms import CustomUserRegisterForm, CustomLoginForm
-from .models import CustomUser, Event, Ticket, Department
+from .models import CustomUser, Event, Ticket, Department, SystemLog, SystemBackup
 
 def register_view(request):
     from .models import Department
@@ -106,6 +110,14 @@ def superadmin_dashboard(request):
     users = CustomUser.objects.all()
     events = Event.objects.all()
     
+    # Calculate statistics
+    total_bookings = Ticket.objects.count()
+    
+    # Filter users by role
+    role_filter = request.GET.get('role')
+    if role_filter:
+        users = users.filter(role=role_filter)
+    
     context = {
         'departments': departments,
         'users': users,
@@ -113,6 +125,7 @@ def superadmin_dashboard(request):
         'total_departments': departments.count(),
         'total_users': users.count(),
         'total_events': events.count(),
+        'total_bookings': total_bookings,
     }
     
     return render(request, 'dashboard/superadmin_dashboard.html', context)
@@ -337,22 +350,185 @@ def create_user(request):
     return render(request, 'mainapp/create_user.html', {'form': form})
 
 @login_required
-def system_settings(request):
+def admin_settings(request):
     if request.user.role != 'superadmin':
         return HttpResponseForbidden("You don't have permission to view this page.")
-    return render(request, 'mainapp/system_settings.html')
+    return render(request, 'dashboard/admin_settings.html')
 
 @login_required
-def system_logs(request):
+def admin_logs(request):
     if request.user.role != 'superadmin':
         return HttpResponseForbidden("You don't have permission to view this page.")
-    return render(request, 'mainapp/system_logs.html')
+    
+    # Get filter parameters
+    date_range = request.GET.get('date_range')
+    log_level = request.GET.get('log_level')
+    log_type = request.GET.get('log_type')
+    search_query = request.GET.get('search', '')
+    
+    # Base queryset
+    logs = SystemLog.objects.all()
+    
+    # Apply date range filter
+    if date_range:
+        now = timezone.now()
+        if date_range == 'last_24_hours':
+            logs = logs.filter(timestamp__gte=now - timezone.timedelta(days=1))
+        elif date_range == 'last_7_days':
+            logs = logs.filter(timestamp__gte=now - timezone.timedelta(days=7))
+        elif date_range == 'last_30_days':
+            logs = logs.filter(timestamp__gte=now - timezone.timedelta(days=30))
+    
+    # Apply log level filter
+    if log_level and log_level != 'all':
+        logs = logs.filter(level=log_level.upper())
+    
+    # Apply log type filter
+    if log_type and log_type != 'all':
+        logs = logs.filter(log_type=log_type.upper())
+    
+    # Apply search filter
+    if search_query:
+        logs = logs.filter(
+            models.Q(event__icontains=search_query) |
+            models.Q(details__icontains=search_query) |
+            models.Q(user__username__icontains=search_query)
+        )
+    
+    # Handle AJAX request for filtered results
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        html = render_to_string('dashboard/partials/log_entries.html', {'logs': logs})
+        return JsonResponse({'html': html})
+    
+    return render(request, 'dashboard/admin_logs.html', {
+        'logs': logs,
+        'log_levels': SystemLog.LOG_LEVELS,
+        'log_types': SystemLog.LOG_TYPES
+    })
 
 @login_required
-def system_backup(request):
+def admin_backup(request):
     if request.user.role != 'superadmin':
         return HttpResponseForbidden("You don't have permission to view this page.")
-    return render(request, 'mainapp/system_backup.html')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'create_backup':
+            try:
+                # Create backup directory if it doesn't exist
+                backup_dir = os.path.join(settings.MEDIA_ROOT, 'backups')
+                os.makedirs(backup_dir, exist_ok=True)
+                
+                # Generate backup filename
+                timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+                backup_filename = f'backup_{timestamp}.json'
+                backup_path = os.path.join(backup_dir, backup_filename)
+                
+                # Get all data to backup
+                data = {
+                    'events': list(Event.objects.values()),
+                    'users': list(CustomUser.objects.values()),
+                    'departments': list(Department.objects.values()),
+                    'tickets': list(Ticket.objects.values()),
+                }
+                
+                # Write backup file
+                with open(backup_path, 'w') as f:
+                    json.dump(data, f, indent=4, default=str)
+                
+                # Create backup record
+                backup = SystemBackup.objects.create(
+                    backup_type='FULL',
+                    status='COMPLETED',
+                    file_path=backup_path,
+                    file_size=os.path.getsize(backup_path),
+                    created_by=request.user
+                )
+                
+                # Log backup creation
+                SystemLog.objects.create(
+                    level='INFO',
+                    log_type='SYSTEM',
+                    event='Backup Created',
+                    user=request.user,
+                    details=f'Backup created successfully: {backup.backup_id}'
+                )
+                
+                messages.success(request, 'Backup created successfully.')
+                
+            except Exception as e:
+                SystemLog.objects.create(
+                    level='ERROR',
+                    log_type='SYSTEM',
+                    event='Backup Failed',
+                    user=request.user,
+                    details=str(e)
+                )
+                messages.error(request, f'Failed to create backup: {str(e)}')
+        
+        elif action == 'restore_backup':
+            backup_id = request.POST.get('backup_id')
+            try:
+                backup = SystemBackup.objects.get(backup_id=backup_id)
+                
+                # Read backup file
+                with open(backup.file_path, 'r') as f:
+                    data = json.load(f)
+                
+                # Restore data (you might want to add more validation and error handling)
+                with transaction.atomic():
+                    # Clear existing data
+                    Ticket.objects.all().delete()
+                    Event.objects.all().delete()
+                    Department.objects.all().delete()
+                    CustomUser.objects.exclude(id=request.user.id).delete()
+                    
+                    # Restore data
+                    for dept in data['departments']:
+                        Department.objects.create(**dept)
+                    for user in data['users']:
+                        if user['id'] != request.user.id:  # Skip current user
+                            CustomUser.objects.create(**user)
+                    for event in data['events']:
+                        Event.objects.create(**event)
+                    for ticket in data['tickets']:
+                        Ticket.objects.create(**ticket)
+                
+                SystemLog.objects.create(
+                    level='INFO',
+                    log_type='SYSTEM',
+                    event='Backup Restored',
+                    user=request.user,
+                    details=f'Backup restored successfully: {backup_id}'
+                )
+                
+                messages.success(request, 'Backup restored successfully.')
+                
+            except Exception as e:
+                SystemLog.objects.create(
+                    level='ERROR',
+                    log_type='SYSTEM',
+                    event='Restore Failed',
+                    user=request.user,
+                    details=str(e)
+                )
+                messages.error(request, f'Failed to restore backup: {str(e)}')
+    
+    # Get all backups for display
+    backups = SystemBackup.objects.all()
+    
+    # Calculate statistics
+    total_backups = backups.count()
+    storage_used = sum(backup.file_size for backup in backups)
+    last_backup = backups.first()
+    
+    return render(request, 'dashboard/admin_backup.html', {
+        'backups': backups,
+        'total_backups': total_backups,
+        'storage_used': storage_used,
+        'last_backup': last_backup,
+    })
 from django.contrib import messages
 from .forms import EventForm
 

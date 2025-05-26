@@ -116,7 +116,7 @@
                     </div>
                 </div>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div id="userGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {% for user in users %}
                     <div class="bg-gray-700 text-white p-6 rounded-lg shadow-lg user-card" data-role="{{ user.role }}" style="display: block;">
                         <div class="flex items-center space-x-4 mb-4">
@@ -150,13 +150,13 @@
             <h3 class="text-xl font-semibold text-purple-400 mb-2"><i class="fas fa-cogs mr-2"></i>System Settings</h3>
             <p class="text-gray-400 mb-4">Configure system-wide settings and perform maintenance tasks.</p>
             <div class="flex flex-wrap justify-center gap-4">
-                <a href="{% url 'system_settings' %}" class="inline-block bg-purple-400 text-white px-4 py-2 rounded-lg hover:bg-purple-300 transition transform hover:-translate-y-1 hover:shadow-lg">
+                <a href="{% url 'admin_settings' %}" class="inline-block bg-purple-400 text-white px-4 py-2 rounded-lg hover:bg-purple-300 transition transform hover:-translate-y-1 hover:shadow-lg">
                     <i class="fas fa-sliders-h mr-1"></i>Settings
                 </a>
-                <a href="{% url 'system_logs' %}" class="inline-block bg-purple-400 text-white px-4 py-2 rounded-lg hover:bg-purple-300 transition transform hover:-translate-y-1 hover:shadow-lg">
+                <a href="{% url 'admin_logs' %}" class="inline-block bg-purple-400 text-white px-4 py-2 rounded-lg hover:bg-purple-300 transition transform hover:-translate-y-1 hover:shadow-lg">
                     <i class="fas fa-list-alt mr-1"></i>View Logs
                 </a>
-                <a href="{% url 'system_backup' %}" class="inline-block bg-purple-400 text-white px-4 py-2 rounded-lg hover:bg-purple-300 transition transform hover:-translate-y-1 hover:shadow-lg">
+                <a href="{% url 'admin_backup' %}" class="inline-block bg-purple-400 text-white px-4 py-2 rounded-lg hover:bg-purple-300 transition transform hover:-translate-y-1 hover:shadow-lg">
                     <i class="fas fa-database mr-1"></i>Backup
                 </a>
             </div>
@@ -164,15 +164,13 @@
     </div>
 </div>
 <script>
-    // Department search and filter functionality
+    // Department filtering functionality
     const departmentSearch = document.getElementById('departmentSearch');
-    const departmentGrid = document.getElementById('departmentGrid');
-    const departments = departmentGrid.getElementsByClassName('department-card');
+    const departments = document.getElementsByClassName('department-card');
     let showAllDepartments = false;
 
     departmentSearch.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        filterDepartments(searchTerm);
+        filterDepartments(this.value.toLowerCase());
     });
 
     function filterDepartments(searchTerm = '') {
@@ -181,7 +179,6 @@
             const hasActiveEvents = dept.dataset.hasActiveEvents === 'true';
             const matchesSearch = title.includes(searchTerm);
             dept.style.display = matchesSearch && (showAllDepartments || hasActiveEvents) ? 'block' : 'none';
-            // Add smooth transition
             dept.style.transition = 'all 0.3s ease-in-out';
             dept.style.opacity = dept.style.display === 'block' ? '1' : '0';
         });
@@ -195,30 +192,54 @@
     // User search and filter functionality
     const userSearch = document.getElementById('userSearch');
     const userGrid = document.getElementById('userGrid');
-    const users = userGrid.getElementsByClassName('user-card');
     let currentUserFilter = 'all';
 
     userSearch.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        filterAndSearchUsers(searchTerm, currentUserFilter);
+        updateUsers(currentUserFilter, this.value);
     });
 
     function filterUsers(role) {
         currentUserFilter = role;
-        filterAndSearchUsers(userSearch.value.toLowerCase(), role);
+        const radios = document.querySelectorAll('[name="userRole"]');
+        radios.forEach(radio => {
+            const peer = radio.parentElement.querySelector('.peer');
+            if (radio.value === role) {
+                radio.checked = true;
+                peer.classList.add('bg-purple-400');
+                peer.classList.remove('bg-gray-600');
+            } else {
+                radio.checked = false;
+                peer.classList.remove('bg-purple-400');
+                peer.classList.add('bg-gray-600');
+            }
+        });
+        updateUsers(role, userSearch.value);
     }
 
-    function filterAndSearchUsers(searchTerm, role) {
-        Array.from(users).forEach(user => {
-            const username = user.querySelector('h4').textContent.toLowerCase();
-            const userRole = user.dataset.role;
-            const matchesSearch = username.includes(searchTerm);
-            const matchesRole = role === 'all' || userRole === role;
-            user.style.display = (matchesSearch && matchesRole) ? 'block' : 'none';
-            // Add smooth transition
-            user.style.transition = 'all 0.3s ease-in-out';
-            user.style.opacity = user.style.display === 'block' ? '1' : '0';
-        });
+    function updateUsers(role, search) {
+        const params = new URLSearchParams();
+        if (role && role !== 'all') params.append('role', role);
+        if (search) params.append('search', search);
+
+        fetch(`/filter-users/?${params.toString()}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.html) {
+                    userGrid.innerHTML = data.html;
+                } else {
+                    console.error('Invalid response data');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                userGrid.innerHTML = '<div class="text-red-500 p-4">Error loading users. Please try again.</div>';
+            });
+    }
     }
 
     // Initialize with active event departments and all users visible
@@ -228,6 +249,5 @@
         filterDepartments();
         filterUsers('all');
     });
-</script>
 </script>
 {% endblock %}

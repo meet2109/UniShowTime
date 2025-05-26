@@ -113,6 +113,15 @@
             {% endif %}
         </div>
 
+        <!-- Event Pricing -->
+        <div class="mb-4">
+            <label for="id_pricing" class="block text-sm font-medium text-gray-200">Event Pricing</label>
+            <input type="number" id="id_pricing" name="pricing" class="block w-full px-4 py-3 bg-gray-900 text-gray-200 border border-gray-600 rounded-lg" placeholder="Enter event pricing" value="{{ form.pricing.value|default:'' }}" required>
+            {% if form.pricing.errors %}
+                <p class="text-red-400 text-xs mt-1">{{ form.pricing.errors.0 }}</p>
+            {% endif %}
+        </div
+
         <!-- Available Tickets -->
         <div class="mb-4">
             <label for="id_available_tickets" class="block text-sm font-medium text-gray-200">Available Tickets</label>

@@ -5,6 +5,8 @@ from django.core.files import File
 from io import BytesIO
 import qrcode
 import json
+import os
+import datetime
 
 ROLE_CHOICES = (
     ('student', 'Student'),
@@ -100,4 +102,68 @@ class Ticket(models.Model):
             canvas = BytesIO()
             qr_img.save(canvas, format='PNG')
             self.qr_code.save(f"qr_{self.user.username}_{self.event.id}.png", File(canvas), save=False)
+            super().save(*args, **kwargs)
+
+class SystemLog(models.Model):
+    LOG_LEVELS = (
+        ('INFO', 'Info'),
+        ('WARNING', 'Warning'),
+        ('ERROR', 'Error'),
+        ('CRITICAL', 'Critical'),
+    )
+
+    LOG_TYPES = (
+        ('ADMIN', 'Admin Action'),
+        ('EVENT', 'Event Log'),
+        ('USER', 'User Action'),
+        ('SYSTEM', 'System Log'),
+    )
+
+    timestamp = models.DateTimeField(auto_now_add=True)
+    level = models.CharField(max_length=10, choices=LOG_LEVELS)
+    log_type = models.CharField(max_length=10, choices=LOG_TYPES)
+    event = models.CharField(max_length=255)
+    user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
+    details = models.TextField()
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.timestamp} - {self.level} - {self.event}"
+
+class SystemBackup(models.Model):
+    BACKUP_TYPES = (
+        ('FULL', 'Full Backup'),
+        ('PARTIAL', 'Partial Backup'),
+    )
+
+    STATUS_CHOICES = (
+        ('PENDING', 'Pending'),
+        ('IN_PROGRESS', 'In Progress'),
+        ('COMPLETED', 'Completed'),
+        ('FAILED', 'Failed'),
+    )
+
+    backup_id = models.CharField(max_length=20, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    backup_type = models.CharField(max_length=10, choices=BACKUP_TYPES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    file_path = models.CharField(max_length=255)
+    file_size = models.BigIntegerField(default=0)  # Size in bytes
+    created_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
+    error_message = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.backup_id} - {self.created_at}"
+
+    def save(self, *args, **kwargs):
+        if not self.backup_id:
+            # Generate a unique backup ID (e.g., BK2401201)
+            date_str = self.created_at.strftime("%y%m%d")
+            count = SystemBackup.objects.filter(backup_id__startswith=f"BK{date_str}").count() + 1
+            self.backup_id = f"BK{date_str}{count}"
         super().save(*args, **kwargs)

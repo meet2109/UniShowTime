@@ -1,0 +1,23 @@
+{% for log in logs %}
+<tr class="hover:bg-gray-700 transition-colors">
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        {% if log.level == 'INFO' %}
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{{ log.level }}</span>
+        {% elif log.level == 'WARNING' %}
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">{{ log.level }}</span>
+        {% elif log.level == 'ERROR' %}
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">{{ log.level }}</span>
+        {% elif log.level == 'CRITICAL' %}
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">{{ log.level }}</span>
+        {% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{{ log.event }}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{{ log.user.username|default:"System" }}</td>
+    <td class="px-6 py-4 text-sm text-gray-300">{{ log.details }}</td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="5" class="px-6 py-4 text-center text-gray-400">No logs found matching the current filters.</td>
+</tr>
+{% endfor %}

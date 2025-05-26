@@ -21,7 +21,7 @@ from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('django-admin/', admin.site.urls),
     path('', include('mainapp.urls')),
     
     # Password Reset URLs
