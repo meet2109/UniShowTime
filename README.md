@@ -158,17 +158,6 @@ UniShowTime/
 │── static/              # Tailwind, CSS, JS
 ```
 
----
-
-## 📸 Screenshots
-
-(Add UI screenshots here: homepage, event booking, suggestion form, admin panel)
-
----
-
-## 📝 License
-
-This project is licensed under the **MIT License**.
 
 ---
 
